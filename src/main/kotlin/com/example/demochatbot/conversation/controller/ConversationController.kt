@@ -1,7 +1,7 @@
 package com.example.demochatbot.conversation.controller
 
 import com.example.demochatbot.conversation.controller.model.ConversationDTO
-import com.example.demochatbot.conversation.service.model.Conversation
+import com.example.demochatbot.conversation.service.model.Message
 import com.example.demochatbot.conversation.service.ConversationService
 import org.springframework.web.bind.annotation.*
 
@@ -13,7 +13,7 @@ class ConversationController(val conversationService: ConversationService) {
 		conversationService.getOpenAIResponse(chatbotRequest)
 
 	@GetMapping("/conversation/history")
-	fun getConversationHistory(): List<Conversation> = conversationService.getConversationHistory()
+	fun getConversationHistory(): List<Message> = conversationService.getConversationHistory()
 
 	@GetMapping("/conversation/messages")
 	fun getMessagesByStatus(markStatus: Boolean) = conversationService.getMessagesByStatus(markStatus)

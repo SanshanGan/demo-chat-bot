@@ -6,7 +6,7 @@ import com.example.demochatbot.conversation.repository.ConversationRepository
 import com.example.demochatbot.conversation.controller.model.ConversationDTO
 import com.example.demochatbot.conversation.repository.doc.ConversationTemplate
 import com.example.demochatbot.conversation.repository.doc.ConversationDoc
-import com.example.demochatbot.conversation.service.mapper.toConversation
+import com.example.demochatbot.conversation.service.mapper.toMessage
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -32,10 +32,10 @@ class ConversationService(
 		return ConversationDTO.Response(id = savedConversation.id, response = answer)
 	}
 
-	fun getConversationHistory() = conversationRepo.findAll().map { toConversation(it) }
+	fun getConversationHistory() = conversationRepo.findAll().map { toMessage(it) }
 
 	fun getMessagesByStatus(markStatus: Boolean) =
-		conversationRepo.findByMarkStatus(markStatus).map { toConversation(it) }
+		conversationRepo.findByMarkStatus(markStatus).map { toMessage(it) }
 
 	fun changeMessageStatus(id: String, markStatus: Boolean) {
 		val message = conversationRepo.findByIdOrNull(id) ?: throw BusinessException.ConversationNotFoundException()

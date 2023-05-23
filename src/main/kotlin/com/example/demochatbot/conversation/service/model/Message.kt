@@ -1,7 +1,7 @@
 package com.example.demochatbot.conversation.service.model
 
 
-data class Conversation(
+data class Message(
 	val id: String,
 	var markStatus: Boolean,
 	val question: String,
