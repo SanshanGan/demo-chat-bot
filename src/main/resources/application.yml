@@ -1,0 +1,16 @@
+server:
+  port: 8081
+services:
+  openai:
+    url: https://api.aiproxy.io/v1
+    paths:
+      completion: "/completions"
+      chatCompletion: "/chat/completions"
+    headers:
+    model:
+      "gpt-3.5-turbo"
+    key: ""
+spring:
+  data:
+    mongodb:
+      uri: mongodb://101.43.87.217:32661/admin

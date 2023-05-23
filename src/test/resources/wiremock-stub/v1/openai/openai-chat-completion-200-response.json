@@ -1,0 +1,22 @@
+{
+  "model": "gpt-3.5-turbo-0301",
+  "object": "chat.completion",
+  "usage": {
+    "prompt_tokens": 33,
+    "completion_tokens": 32,
+    "total_tokens": 65
+  },
+  "id": "chatcmpl-7IawqxDxCRGF8oiXu4d0nt0XJoRQ4",
+  "created": 1684666288,
+  "choices": [
+    {
+      "index": 0,
+      "delta": null,
+      "message": {
+        "role": "assistant",
+        "content": "好的，我很乐意为您提供帮助。您需要什么样的帮助呢？"
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}
