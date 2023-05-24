@@ -3,7 +3,7 @@ package com.example.demochatbot.common.exception
 
 sealed class BusinessException(val code: String, override val message: String) : RuntimeException(message) {
 
-	class ConversationNotFoundException(code: String = "100000", message: String = "The conversation dose not exist") :
+	class ConversationNotFoundException(code: String = "100000", message: String = "The message dose not exist") :
 		BusinessException(code, message)
 
 	sealed class OpenAIException(code: String, message: String) : BusinessException(code, message) {
