@@ -10,6 +10,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -36,18 +37,31 @@ class ConversationServiceTest {
 	inner class GetConversationHistory {
 		@Test
 		fun `should get all the history of conversation`() {
-		    //given
-
-
-
-		    //when
-
-
-
-		    //then
-
+			every { conversationRepo.findAll() } returns listOf(
+				ConversationDoc(
+					id = "1",
+					question = ConversationTemplate(content = "Hello, I'm test zero", user = "user"),
+					answer = ConversationTemplate(content = "bye, test zero", user = "chatbot"),
+					markStatus = false
+				),
+				ConversationDoc(
+					id = "2",
+					question = ConversationTemplate(content = "Hello, I'm test one", user = "user"),
+					answer = ConversationTemplate(content = "bye, test one", user = "chatbot"),
+					markStatus = true
+				)
+			)
+			//given
+			val historyOfConversation = conversationService.getConversationHistory()
+			//then
+			Assertions.assertEquals("1", historyOfConversation[0].id)
+			Assertions.assertEquals("Hello, I'm test zero", historyOfConversation[0].question)
+			Assertions.assertEquals(false, historyOfConversation[0].markStatus)
+			Assertions.assertEquals("2", historyOfConversation[1].id)
+			Assertions.assertEquals("Hello, I'm test one", historyOfConversation[1].question)
+			Assertions.assertEquals(true, historyOfConversation[1].markStatus)
+			verify(exactly = 1) { conversationRepo.findAll() }
 		}
-
 	}
 
 	@Nested
@@ -98,8 +112,9 @@ class ConversationServiceTest {
 			verify(exactly = 1) { conversationRepo.findByMarkStatus(true) }
 		}
 	}
+
 	@Nested
-	@DisplayName("/conversation/messages/{id}/change")
+	@DisplayName("PATCH v1/conversation/messages/{id}/change")
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	inner class ChangeMessageStatus {
 		@Test
@@ -116,6 +131,7 @@ class ConversationServiceTest {
 			conversationService.changeMessageStatus("1", true)
 			//when/then
 			AssertionErrors.assertTrue("marked must be changed to be true", messageSet.markStatus)
+			verify(exactly = 1) { conversationRepo.save(messageSet) }
 		}
 
 		@Test
@@ -133,6 +149,7 @@ class ConversationServiceTest {
 			conversationService.changeMessageStatus("2", false)
 			//when/then
 			AssertionErrors.assertTrue("marked must be changed to be false", !messageSet.markStatus)
+			verify(exactly = 1) { conversationRepo.save(messageSet) }
 		}
 
 	}
