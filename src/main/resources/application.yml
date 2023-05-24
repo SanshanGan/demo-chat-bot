@@ -13,4 +13,4 @@ services:
 spring:
   data:
     mongodb:
-      uri: mongodb://101.43.87.217:32661/admin
+      uri: ""
