@@ -1,6 +1,7 @@
 package com.example.demochatbot.conversation.controller
 
 import com.example.demochatbot.conversation.chat.CoreChat
+import com.example.demochatbot.conversation.controller.model.ConversationDTO
 import com.example.demochatbot.conversation.repository.ConversationRepository
 import com.example.demochatbot.conversation.repository.doc.ConversationDoc
 import com.example.demochatbot.conversation.repository.doc.ConversationTemplate
@@ -31,61 +32,73 @@ class ConversationServiceTest {
 	@InjectMockKs
 	private lateinit var conversationService: ConversationService
 
+	fun givenConversationDoc(markStatus: Boolean) = ConversationDoc(
+		id = UUID.randomUUID().toString(),
+		markStatus = markStatus,
+		question = ConversationTemplate(content = "test prompt", user = "user"),
+		answer = ConversationTemplate(content = "returned answer.", user = "chatbot")
+	)
+
 	@Nested
-	@DisplayName("GET /v1/conversation/history")
+	@DisplayName("GetOpenAIResponse")
+	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+	inner class GetOpenAIResponse {
+		@Test
+		fun `should return OpenAI result`() {
+			//given
+			val chatbotRequest = ConversationDTO.Request(
+				role = "user",
+				prompt = "test prompt"
+			)
+			every { coreChat.conversation(any()) } returns "returned answer."
+			every { conversationRepo.save(any()) } returns givenConversationDoc(false)            //when
+			val openAIResponse = conversationService.getOpenAIResponse(chatbotRequest)
+			//then
+			Assertions.assertTrue(openAIResponse.id.isNotBlank())
+			Assertions.assertEquals("returned answer.", openAIResponse.response)
+			verify(exactly = 1) { coreChat.conversation(any()) }
+			verify(exactly = 1) { conversationRepo.save(any()) }
+		}
+	}
+
+	@Nested
+	@DisplayName("GetConversationHistory")
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	inner class GetConversationHistory {
 		@Test
 		fun `should get all the history of conversation`() {
 			every { conversationRepo.findAll() } returns listOf(
-				ConversationDoc(
-					id = "1",
-					question = ConversationTemplate(content = "Hello, I'm test zero", user = "user"),
-					answer = ConversationTemplate(content = "bye, test zero", user = "chatbot"),
-					markStatus = false
-				),
-				ConversationDoc(
-					id = "2",
-					question = ConversationTemplate(content = "Hello, I'm test one", user = "user"),
-					answer = ConversationTemplate(content = "bye, test one", user = "chatbot"),
-					markStatus = true
-				)
+				givenConversationDoc(false),
+				givenConversationDoc(true)
 			)
 			//given
 			val historyOfConversation = conversationService.getConversationHistory()
 			//then
-			Assertions.assertEquals("1", historyOfConversation[0].id)
-			Assertions.assertEquals("Hello, I'm test zero", historyOfConversation[0].question)
+			Assertions.assertTrue(historyOfConversation[0].id.isNotBlank())
+			Assertions.assertTrue(historyOfConversation[1].id.isNotBlank())
+			Assertions.assertEquals("test prompt", historyOfConversation[0].question)
+			Assertions.assertEquals("test prompt", historyOfConversation[1].question)
 			Assertions.assertEquals(false, historyOfConversation[0].markStatus)
-			Assertions.assertEquals("2", historyOfConversation[1].id)
-			Assertions.assertEquals("Hello, I'm test one", historyOfConversation[1].question)
 			Assertions.assertEquals(true, historyOfConversation[1].markStatus)
 			verify(exactly = 1) { conversationRepo.findAll() }
 		}
 	}
 
 	@Nested
-	@DisplayName("GET /v1/conversation/messages")
+	@DisplayName("GetMessagesByStatus")
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	inner class GetMessagesByStatus {
 		@Test
 		fun `should give a list of messages with false status`() {
 
-			every { conversationRepo.findByMarkStatus(false) } returns listOf(
-				ConversationDoc(
-					id = "1",
-					question = ConversationTemplate(content = "Hello", user = "user"),
-					answer = ConversationTemplate(content = "bye", user = "chatbot"),
-					markStatus = false
-				)
-			)
+			every { conversationRepo.findByMarkStatus(false) } returns listOf(givenConversationDoc(false))
 			//given
 			val messagesByStatus = conversationService.getMessagesByStatus(false)
 			//when/then
-			val (id, markStatus, question, answer) = messagesByStatus.first()
-			AssertionErrors.assertTrue("id must be equal", id == "1")
-			AssertionErrors.assertTrue("question must be equal", question == "Hello")
-			AssertionErrors.assertTrue("answer must be equal", answer == "bye")
+			val (_, markStatus, question, answer) = messagesByStatus.first()
+			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
+			AssertionErrors.assertTrue("question must be equal", question == "test prompt")
+			AssertionErrors.assertTrue("answer must be equal", answer == "returned answer.")
 			AssertionErrors.assertTrue("marked must be false", !markStatus)
 			verify(exactly = 1) { conversationRepo.findByMarkStatus(false) }
 		}
@@ -93,38 +106,26 @@ class ConversationServiceTest {
 		@Test
 		fun `should give a list of messages with true status`() {
 
-			every { conversationRepo.findByMarkStatus(true) } returns listOf(
-				ConversationDoc(
-					id = "2",
-					question = ConversationTemplate(content = "Hello", user = "user"),
-					answer = ConversationTemplate(content = "bye", user = "chatbot"),
-					markStatus = true
-				)
-			)
+			every { conversationRepo.findByMarkStatus(true) } returns listOf(givenConversationDoc(true))
 			//given
 			val messagesByStatus = conversationService.getMessagesByStatus(true)
-			val (id, markStatus, question, answer) = messagesByStatus.first()
+			val (_, markStatus, question, answer) = messagesByStatus.first()
 			//when/then
-			AssertionErrors.assertTrue("id must be equal", id == "2")
-			AssertionErrors.assertTrue("question must be equal", question == "Hello")
-			AssertionErrors.assertTrue("answer must be equal", answer == "bye")
+			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
+			AssertionErrors.assertTrue("question must be equal", question == "test prompt")
+			AssertionErrors.assertTrue("answer must be equal", answer == "returned answer.")
 			AssertionErrors.assertTrue("marked must be true", markStatus)
 			verify(exactly = 1) { conversationRepo.findByMarkStatus(true) }
 		}
 	}
 
 	@Nested
-	@DisplayName("PATCH v1/conversation/messages/{id}/change")
+	@DisplayName("ChangeMessageStatus")
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	inner class ChangeMessageStatus {
 		@Test
 		fun `should change the message's status to true`() {
-			val messageSet = ConversationDoc(
-				id = "1",
-				question = ConversationTemplate(content = "Hello", user = "user"),
-				answer = ConversationTemplate(content = "bye", user = "chatbot"),
-				markStatus = false
-			)
+			val messageSet = givenConversationDoc(false)
 			every { conversationRepo.findByIdOrNull("1") } returns messageSet
 			every { conversationRepo.save(messageSet) } returns messageSet.copy(markStatus = true)
 			//given
@@ -137,12 +138,7 @@ class ConversationServiceTest {
 		@Test
 		fun `should change the message's status to false`() {
 
-			val messageSet = ConversationDoc(
-				id = "2",
-				question = ConversationTemplate(content = "Hello", user = "user"),
-				answer = ConversationTemplate(content = "bye", user = "chatbot"),
-				markStatus = true
-			)
+			val messageSet = givenConversationDoc(true)
 			every { conversationRepo.findByIdOrNull("2") } returns messageSet
 			every { conversationRepo.save(messageSet) } returns messageSet.copy(markStatus = false)
 			//given
