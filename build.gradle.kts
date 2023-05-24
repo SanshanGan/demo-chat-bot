@@ -26,6 +26,8 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 	testImplementation("io.mockk:mockk:1.13.4")
+	testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock")
+	testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner")
 }
 
 dependencyManagement {
