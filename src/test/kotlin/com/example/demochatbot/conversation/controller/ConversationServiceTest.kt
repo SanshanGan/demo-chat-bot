@@ -5,6 +5,7 @@ import com.example.demochatbot.conversation.controller.model.ConversationDTO
 import com.example.demochatbot.conversation.repository.ConversationRepository
 import com.example.demochatbot.conversation.repository.doc.ConversationDoc
 import com.example.demochatbot.conversation.repository.doc.ConversationTemplate
+ import com.example.demochatbot.conversation.repository.doc.Status
 import com.example.demochatbot.conversation.service.ConversationService
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -32,9 +33,9 @@ class ConversationServiceTest {
 	@InjectMockKs
 	private lateinit var conversationService: ConversationService
 
-	fun givenConversationDoc(markStatus: Boolean) = ConversationDoc(
+	fun givenConversationDoc(markStatus: Status) = ConversationDoc(
 		id = UUID.randomUUID().toString(),
-		markStatus = markStatus,
+		status = markStatus,
 		question = ConversationTemplate(content = "test prompt", user = "user"),
 		answer = ConversationTemplate(content = "returned answer.", user = "chatbot")
 	)
@@ -50,7 +51,7 @@ class ConversationServiceTest {
 				prompt = "test prompt"
 			)
 			every { coreChat.conversation(any()) } returns "returned answer."
-			every { conversationRepo.save(any()) } returns givenConversationDoc(false)            //when
+			every { conversationRepo.save(any()) } returns givenConversationDoc(Status(markStatus = false))
 			//when
 			val openAIResponse = conversationService.getOpenAIResponse(chatbotRequest)
 			//then
@@ -81,8 +82,8 @@ class ConversationServiceTest {
 		@Test
 		fun `should get all the history of conversation`() {
 			every { conversationRepo.findAll() } returns listOf(
-				givenConversationDoc(false),
-				givenConversationDoc(true)
+				givenConversationDoc(Status(markStatus = false)),
+				givenConversationDoc(Status(markStatus = true))
 			)
 			//when
 			val historyOfConversation = conversationService.getConversationHistory()
@@ -91,8 +92,8 @@ class ConversationServiceTest {
 			Assertions.assertTrue(historyOfConversation[1].id.isNotBlank())
 			Assertions.assertEquals("test prompt", historyOfConversation[0].question)
 			Assertions.assertEquals("test prompt", historyOfConversation[1].question)
-			Assertions.assertEquals(false, historyOfConversation[0].markStatus)
-			Assertions.assertEquals(true, historyOfConversation[1].markStatus)
+			Assertions.assertEquals(false, historyOfConversation[0].markStatus.markStatus)
+			Assertions.assertEquals(true, historyOfConversation[1].markStatus.markStatus)
 			verify(exactly = 1) { conversationRepo.findAll() }
 		}
 	}
@@ -103,30 +104,30 @@ class ConversationServiceTest {
 	inner class GetMessagesByStatus {
 		@Test
 		fun `should give a list of messages with false status`() {
-			every { conversationRepo.findByMarkStatus(false) } returns listOf(givenConversationDoc(false))
+			every { conversationRepo.findByMarkStatus(Status(markStatus = false)) } returns listOf(givenConversationDoc(Status(markStatus = false)))
 			//when
-			val messagesByStatus = conversationService.getMessagesByStatus(false)
+			val messagesByStatus = conversationService.getMessagesByStatus(Status(markStatus = false))
 			//then
 			val (_, markStatus, question, answer) = messagesByStatus.first()
 			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
 			AssertionErrors.assertTrue("question must be equal", question == "test prompt")
 			AssertionErrors.assertTrue("answer must be equal", answer == "returned answer.")
-			AssertionErrors.assertTrue("marked must be false", !markStatus)
-			verify(exactly = 1) { conversationRepo.findByMarkStatus(false) }
+			AssertionErrors.assertTrue("marked must be false", !markStatus.markStatus)
+			verify(exactly = 1) { conversationRepo.findByMarkStatus(Status(markStatus = false)) }
 		}
 
 		@Test
 		fun `should give a list of messages with true status`() {
-			every { conversationRepo.findByMarkStatus(true) } returns listOf(givenConversationDoc(true))
+			every { conversationRepo.findByMarkStatus(Status(markStatus = true)) } returns listOf(givenConversationDoc(Status(markStatus = true)))
 			//when
-			val messagesByStatus = conversationService.getMessagesByStatus(true)
+			val messagesByStatus = conversationService.getMessagesByStatus(Status(markStatus = true))
 			val (_, markStatus, question, answer) = messagesByStatus.first()
 			//then
 			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
 			AssertionErrors.assertTrue("question must be equal", question == "test prompt")
 			AssertionErrors.assertTrue("answer must be equal", answer == "returned answer.")
-			AssertionErrors.assertTrue("marked must be true", markStatus)
-			verify(exactly = 1) { conversationRepo.findByMarkStatus(true) }
+			AssertionErrors.assertTrue("marked must be true", markStatus.markStatus)
+			verify(exactly = 1) { conversationRepo.findByMarkStatus(Status(markStatus = true)) }
 		}
 	}
 
@@ -136,25 +137,25 @@ class ConversationServiceTest {
 	inner class ChangeMessageStatus {
 		@Test
 		fun `should change the message's status to true`() {
-			val messageSet = givenConversationDoc(false)
+			val messageSet = givenConversationDoc(Status(markStatus = false))
 			every { conversationRepo.findByIdOrNull("1") } returns messageSet
-			every { conversationRepo.save(messageSet) } returns messageSet.copy(markStatus = true)
+			every { conversationRepo.save(messageSet) } returns messageSet.copy(status = Status(markStatus = true))
 			//when
-			conversationService.changeMessageStatus("1", true)
+			conversationService.changeMessageStatus("1", Status(markStatus = true))
 			//then
-			AssertionErrors.assertTrue("marked must be changed to be true", messageSet.markStatus)
+			AssertionErrors.assertTrue("marked must be changed to be true", messageSet.status.markStatus)
 			verify(exactly = 1) { conversationRepo.save(messageSet) }
 		}
 
 		@Test
 		fun `should change the message's status to false`() {
-			val messageSet = givenConversationDoc(true)
+			val messageSet = givenConversationDoc(Status(markStatus = true))
 			every { conversationRepo.findByIdOrNull("2") } returns messageSet
-			every { conversationRepo.save(messageSet) } returns messageSet.copy(markStatus = false)
+			every { conversationRepo.save(messageSet) } returns messageSet.copy(status = Status(markStatus = false))
 			//when
-			conversationService.changeMessageStatus("2", false)
+			conversationService.changeMessageStatus("2", Status(markStatus = false))
 			//then
-			AssertionErrors.assertTrue("marked must be changed to be false", !messageSet.markStatus)
+			AssertionErrors.assertTrue("marked must be changed to be false", !messageSet.status.markStatus)
 			verify(exactly = 1) { conversationRepo.save(messageSet) }
 		}
 

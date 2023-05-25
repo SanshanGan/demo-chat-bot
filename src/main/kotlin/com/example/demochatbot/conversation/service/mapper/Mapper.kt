@@ -5,7 +5,7 @@ import com.example.demochatbot.conversation.service.model.Message
 
 fun toMessage(conversationDoc: ConversationDoc) = Message(
 	id = conversationDoc.id,
-	markStatus = conversationDoc.markStatus,
+	markStatus = conversationDoc.status,
 	question = conversationDoc.question.content,
 	answer = conversationDoc.answer.content,
 	createdAt = conversationDoc.createdAt,

@@ -7,7 +7,7 @@ import java.util.*
 data class ConversationDoc(
 	@Id
 	val id: String = UUID.randomUUID().toString(),
-	var markStatus: Boolean = false,
+	var status: Status,
 	val question: ConversationTemplate,
 	val answer: ConversationTemplate,
 	val createdAt: Long = Instant.now().toEpochMilli()
@@ -16,4 +16,7 @@ data class ConversationDoc(
 data class ConversationTemplate(
 	val content: String,
 	val user: String,
+)
+data class Status(
+	val markStatus: Boolean = false
 )
