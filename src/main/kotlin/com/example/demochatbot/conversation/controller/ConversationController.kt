@@ -16,10 +16,10 @@ class ConversationController(val conversationService: ConversationService) {
 	fun getConversationHistory(): List<Message> = conversationService.getConversationHistory()
 
 	@GetMapping("/conversation/messages")
-	fun getMessagesByStatus(markStatus: Boolean) = conversationService.getMessagesByStatus(markStatus)
+	fun getMessagesByStatus(@RequestParam markStatus: Boolean) = conversationService.getMessagesByStatus(markStatus)
 
 	@PatchMapping("/conversation/messages/{id}/change")
-	fun changeMessageStatus(@PathVariable id: String, markStatus: Boolean) =
+	fun changeMessageStatus(@PathVariable id: String, @RequestParam markStatus: Boolean) =
 		conversationService.changeMessageStatus(id, markStatus)
 
 }
