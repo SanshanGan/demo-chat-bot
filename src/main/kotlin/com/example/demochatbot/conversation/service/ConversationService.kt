@@ -35,8 +35,8 @@ class ConversationService(
 
 	fun getConversationHistory() = conversationRepo.findAll().map { toMessage(it) }
 
-	fun getMessagesByStatus(markStatus: MarkStatusDTO) =
-		conversationRepo.findByMarkStatus(markStatus.markStatus).map { toMessage(it) }
+	fun getMessagesByStatus(markStatus: Boolean) =
+		conversationRepo.findByMarkStatus(markStatus).map { toMessage(it) }
 
 	fun changeMessageStatus(id: String, markStatus: MarkStatusDTO) {
 		val message = conversationRepo.findByIdOrNull(id) ?: throw BusinessException.ConversationNotFoundException()

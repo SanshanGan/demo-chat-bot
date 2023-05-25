@@ -106,7 +106,7 @@ class ConversationServiceTest {
 		fun `should give a list of messages with false status`() {
 			every { conversationRepo.findByMarkStatus(false) } returns listOf(givenConversationDoc(false))
 			//when
-			val messagesByStatus = conversationService.getMessagesByStatus(MarkStatusDTO(markStatus = false))
+			val messagesByStatus = conversationService.getMessagesByStatus(false)
 			//then
 			val (_, markStatus, question, answer) = messagesByStatus.first()
 			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
@@ -120,7 +120,7 @@ class ConversationServiceTest {
 		fun `should give a list of messages with true status`() {
 			every { conversationRepo.findByMarkStatus(true) } returns listOf(givenConversationDoc(true))
 			//when
-			val messagesByStatus = conversationService.getMessagesByStatus(MarkStatusDTO(markStatus = true))
+			val messagesByStatus = conversationService.getMessagesByStatus(true)
 			val (_, markStatus, question, answer) = messagesByStatus.first()
 			//then
 			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
