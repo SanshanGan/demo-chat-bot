@@ -6,7 +6,6 @@ import com.example.demochatbot.conversation.repository.ConversationRepository
 import com.example.demochatbot.conversation.controller.model.ConversationDTO
 import com.example.demochatbot.conversation.repository.doc.ConversationTemplate
 import com.example.demochatbot.conversation.repository.doc.ConversationDoc
-import com.example.demochatbot.conversation.repository.doc.Status
 import com.example.demochatbot.conversation.service.mapper.toMessage
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -20,7 +19,6 @@ class ConversationService(
 		val answer = coreChat.conversation(chatbotRequest)
 		val savedConversation = conversationRepo.save(
 			ConversationDoc(
-				status = Status(),
 				question = ConversationTemplate(
 					content = chatbotRequest.prompt,
 					user = "user"
@@ -36,12 +34,12 @@ class ConversationService(
 
 	fun getConversationHistory() = conversationRepo.findAll().map { toMessage(it) }
 
-	fun getMessagesByStatus(markStatus: Status) =
+	fun getMessagesByStatus(markStatus: Boolean) =
 		conversationRepo.findByMarkStatus(markStatus).map { toMessage(it) }
 
-	fun changeMessageStatus(id: String, markStatus: Status) {
+	fun changeMessageStatus(id: String, markStatus: Boolean) {
 		val message = conversationRepo.findByIdOrNull(id) ?: throw BusinessException.ConversationNotFoundException()
-		message.status = markStatus
+		message.markStatus = markStatus
 		conversationRepo.save(message)
 	}
 }
