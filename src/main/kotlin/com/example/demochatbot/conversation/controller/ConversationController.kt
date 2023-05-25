@@ -3,6 +3,7 @@ package com.example.demochatbot.conversation.controller
 import com.example.demochatbot.conversation.controller.model.ConversationDTO
 import com.example.demochatbot.conversation.service.model.Message
 import com.example.demochatbot.conversation.service.ConversationService
+import com.example.demochatbot.conversation.service.model.MarkStatusDTO
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -16,10 +17,10 @@ class ConversationController(val conversationService: ConversationService) {
 	fun getConversationHistory(): List<Message> = conversationService.getConversationHistory()
 
 	@GetMapping("/conversation/messages")
-	fun getMessagesByStatus(@RequestBody markStatus: Boolean) = conversationService.getMessagesByStatus(markStatus)
+	fun getMessagesByStatus(@RequestBody markStatus: MarkStatusDTO) = conversationService.getMessagesByStatus(markStatus)
 
 	@PatchMapping("/conversation/messages/{id}/change")
-	fun changeMessageStatus(@PathVariable id: String, @RequestBody markStatus: Boolean) =
+	fun changeMessageStatus(@PathVariable id: String, @RequestBody markStatus: MarkStatusDTO) =
 		conversationService.changeMessageStatus(id, markStatus)
 
 }

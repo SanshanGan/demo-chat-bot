@@ -6,6 +6,7 @@ import com.example.demochatbot.conversation.repository.ConversationRepository
 import com.example.demochatbot.conversation.repository.doc.ConversationDoc
 import com.example.demochatbot.conversation.repository.doc.ConversationTemplate
 import com.example.demochatbot.conversation.service.ConversationService
+import com.example.demochatbot.conversation.service.model.MarkStatusDTO
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -105,7 +106,7 @@ class ConversationServiceTest {
 		fun `should give a list of messages with false status`() {
 			every { conversationRepo.findByMarkStatus(false) } returns listOf(givenConversationDoc(false))
 			//when
-			val messagesByStatus = conversationService.getMessagesByStatus(false)
+			val messagesByStatus = conversationService.getMessagesByStatus(MarkStatusDTO(markStatus = false))
 			//then
 			val (_, markStatus, question, answer) = messagesByStatus.first()
 			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
@@ -119,7 +120,7 @@ class ConversationServiceTest {
 		fun `should give a list of messages with true status`() {
 			every { conversationRepo.findByMarkStatus(true) } returns listOf(givenConversationDoc(true))
 			//when
-			val messagesByStatus = conversationService.getMessagesByStatus(true)
+			val messagesByStatus = conversationService.getMessagesByStatus(MarkStatusDTO(markStatus = true))
 			val (_, markStatus, question, answer) = messagesByStatus.first()
 			//then
 			Assertions.assertTrue(messagesByStatus[0].id.isNotBlank())
@@ -140,7 +141,7 @@ class ConversationServiceTest {
 			every { conversationRepo.findByIdOrNull("1") } returns messageSet
 			every { conversationRepo.save(messageSet) } returns messageSet.copy(markStatus = true)
 			//when
-			conversationService.changeMessageStatus("1", true)
+			conversationService.changeMessageStatus("1", MarkStatusDTO(markStatus = true))
 			//then
 			AssertionErrors.assertTrue("marked must be changed to be true", messageSet.markStatus)
 			verify(exactly = 1) { conversationRepo.save(messageSet) }
@@ -152,7 +153,7 @@ class ConversationServiceTest {
 			every { conversationRepo.findByIdOrNull("2") } returns messageSet
 			every { conversationRepo.save(messageSet) } returns messageSet.copy(markStatus = false)
 			//when
-			conversationService.changeMessageStatus("2", false)
+			conversationService.changeMessageStatus("2", MarkStatusDTO(markStatus = false))
 			//then
 			AssertionErrors.assertTrue("marked must be changed to be false", !messageSet.markStatus)
 			verify(exactly = 1) { conversationRepo.save(messageSet) }

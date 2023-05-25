@@ -8,3 +8,6 @@ data class Message(
 	val answer: String,
 	val createdAt: Long
 )
+data class MarkStatusDTO(
+	var markStatus: Boolean
+)
