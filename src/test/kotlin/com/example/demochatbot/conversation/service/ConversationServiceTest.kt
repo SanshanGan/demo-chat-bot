@@ -1,11 +1,10 @@
-package com.example.demochatbot.conversation.controller
+package com.example.demochatbot.conversation.service
 
 import com.example.demochatbot.conversation.chat.CoreChat
 import com.example.demochatbot.conversation.controller.model.ConversationDTO
 import com.example.demochatbot.conversation.repository.ConversationRepository
 import com.example.demochatbot.conversation.repository.doc.ConversationDoc
 import com.example.demochatbot.conversation.repository.doc.ConversationTemplate
-import com.example.demochatbot.conversation.service.ConversationService
 import com.example.demochatbot.conversation.service.model.MarkStatusDTO
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -45,13 +44,13 @@ class ConversationServiceTest {
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	inner class GetOpenAIResponse {
 		@Test
-		fun `should return OpenAI result`() {
+		fun `should return OpenAI result successfully`() {
 			val chatbotRequest = ConversationDTO.Request(
 				role = "user",
 				prompt = "test prompt"
 			)
 			every { coreChat.conversation(any()) } returns "returned answer."
-			every { conversationRepo.save(any()) } returns givenConversationDoc(false)            //when
+			every { conversationRepo.save(any()) } returns givenConversationDoc(false)
 			//when
 			val openAIResponse = conversationService.getOpenAIResponse(chatbotRequest)
 			//then
@@ -62,15 +61,15 @@ class ConversationServiceTest {
 		}
 		@Test
 		fun `should return error message if the OpenAI server error `() {
-		    //given
+			//given
 
 
 
-		    //when
+			//when
 
 
 
-		    //then
+			//then
 
 		}
 	}
